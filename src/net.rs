@@ -169,7 +169,7 @@ pub async fn self_update(leds: &mut Leds) -> anyhow::Result<()> {
 
     if remote > local {
         info!("New release found! Downloading and updating");
-        leds.set_all_colors(smart_leds::RGB { r: 0, g: 255, b: 0 });
+        leds.set_all_colors(smart_leds::RGB { r: 0, g: 100, b: 0 });
         // Grab new release and update
         let url = manifest
             .assets

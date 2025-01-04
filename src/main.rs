@@ -4,13 +4,18 @@ use beacons::{
     Displays, Leds,
 };
 use build_time::build_time_utc;
+use embassy_time::Timer;
 use esp_idf_svc::{
     eventloop::EspSystemEventLoop,
     hal::{
         gpio::{AnyInputPin, OutputPin, PinDriver},
         prelude::Peripherals,
-        spi::{config::DriverConfig, SpiBusDriver, SpiDriver},
+        spi::{
+            config::{Config, DriverConfig},
+            SpiBusDriver, SpiDriver,
+        },
         task::block_on,
+        units::Hertz,
     },
     io,
     nvs::EspDefaultNvsPartition,
@@ -23,18 +28,26 @@ use ws2812_spi::Ws2812;
 
 async fn amain(displays: Displays, mut leds: Leds, mut wifi: AsyncWifi<EspWifi<'static>>) {
     // Red before wifi
-    leds.set_all_colors(smart_leds::RGB { r: 255, g: 0, b: 0 });
+    leds.set_all_colors(smart_leds::RGB { r: 100, g: 0, b: 0 });
 
     connect_to_network(&mut wifi)
         .await
         .expect("wifi connection");
 
     // Blue before update
-    leds.set_all_colors(smart_leds::RGB { r: 0, g: 0, b: 255 });
+    leds.set_all_colors(smart_leds::RGB { r: 0, g: 0, b: 100 });
 
-    self_update(&mut leds).await.expect("self update");
+    // Do this later once I have a build system working
+    // self_update(&mut leds).await.expect("self update");
 
-    todo!()
+    loop {
+        info!("BLUE");
+        leds.set_all_colors(smart_leds::RGB { r: 0, g: 0, b: 100 });
+        Timer::after_secs(1).await;
+        info!("RED");
+        leds.set_all_colors(smart_leds::RGB { r: 100, g: 0, b: 0 });
+        Timer::after_secs(1).await;
+    }
 }
 
 fn main() {
@@ -91,7 +104,8 @@ fn main() {
                     &DriverConfig::new(),
                 )
                 .expect("valid spi");
-                let bus = SpiBusDriver::new(driver, &Default::default()).expect("valid spi bus");
+                let cfg = Config::new().baudrate(Hertz(2_500_000));
+                let bus = SpiBusDriver::new(driver, &cfg).expect("valid spi bus");
 
                 let leds = Ws2812::new(bus);
                 Leds { leds }
