@@ -2,6 +2,8 @@ name: Continuous Integration
 
 on:
   push:
+    branches:
+      - main
     paths-ignore:
       - "**/README.md"
   pull_request:
@@ -20,21 +22,128 @@ jobs:
       matrix:
         action:
           - command: build
-            args: --release
+            args: --release -F enterprise
           - command: fmt
             args: --all -- --check --color always
           - command: clippy
-            args: --all-targets --all-features --workspace -- -D warnings
+            args: --all-features --workspace -- -D warnings
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Setup Rust
         uses: esp-rs/xtensa-toolchain@v1.5
         with:
           default: true
-          buildtargets: esp32s3
+          buildtargets: esp32
           ldproxy: true
+
       - name: Enable caching
         uses: Swatinem/rust-cache@v2
+
+      - name: Create .env file with Wi-Fi credentials
+        run: |
+          echo "WIFI_SSID=\"${{ secrets.WIFI_SSID }}\"" >> .env
+          echo "WIFI_USERNAME=\"${{ secrets.WIFI_USERNAME }}\"" >> .env
+          echo "WIFI_PASSWORD=\"${{ secrets.WIFI_PASSWORD }}\"" >> .env
+          echo "WIFI_EMAIL=\"${{ secrets.WIFI_EMAIL }}\"" >> .env
+
       - name: Run command
         run: cargo ${{ matrix.action.command }} ${{ matrix.action.args }}
+
+      - name: Convert binary to .bin format
+        if: matrix.action.command == 'build'
+        run: |
+          sudo apt-get install -y libudev-dev
+          cargo install espflash
+          espflash save-image --chip esp32 target/xtensa-esp32-espidf/release/beacons beacon-firmware.bin -T partitions.csv
+          ls -la # List files to verify conversion
+
+      # Upload the converted binary as an artifact
+      - name: Upload release binary artifact
+        if: matrix.action.command == 'build'
+        uses: actions/upload-artifact@v3
+        with:
+          name: beacon-firmware-binary
+          path: beacon-firmware.bin
+          if-no-files-found: error
+
+  publish:
+    name: Publish Release
+    runs-on: ubuntu-latest
+    needs: rust-checks
+    if: github.ref == 'refs/heads/main' # Ensure it runs only on the main branch
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get Cargo version
+        id: cargo-version
+        run: echo "VERSION=$(grep '^version =' Cargo.toml | sed -E 's/version = \"([^\"]+)\"/\1/')" >> $GITHUB_ENV
+
+      - name: Get latest release version
+        id: get-latest-release
+        run: |
+          # Fetch the latest release using GitHub API
+          response=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/${{ github.repository }}/releases/latest)
+
+          # Debug: Output the full API response
+          echo "API Response: $response"
+
+          # Extract the version (tag_name) from the response
+          latest_version=$(echo "$response" | jq -r .tag_name | sed 's/^v//')
+
+          # Debug: Output the extracted version
+          echo "Latest release version: $latest_version"
+
+          # If no release is found, set default version to 0.0.0
+          if [ "$latest_version" == "null" ] || [ -z "$latest_version" ]; then
+            latest_version="0.0.0"
+            echo "No releases found. Defaulting to version 0.0.0"
+          fi
+
+          # Set the output for later steps
+          echo "::set-output name=version::$latest_version"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compare versions
+        id: version-check
+        run: |
+          LATEST_VERSION="${{ steps.get-latest-release.outputs.version }}"
+          CURRENT_VERSION="${{ env.VERSION }}"
+
+          # Debugging: Output both versions
+          echo "Latest release version: $LATEST_VERSION"
+          echo "Current version: $CURRENT_VERSION"
+
+          # Compare versions
+          if [ "$LATEST_VERSION" == "$CURRENT_VERSION" ]; then
+            echo "No new version. Skipping release."
+            echo "new_version=false" >> $GITHUB_ENV
+          elif [ "$(printf '%s\n' "$LATEST_VERSION" "$CURRENT_VERSION" | sort -V | head -n1)" == "$LATEST_VERSION" ]; then
+            echo "New version available."
+            echo "new_version=true" >> $GITHUB_ENV
+          else
+            echo "No new version."
+            echo "new_version=false" >> $GITHUB_ENV
+          fi
+
+      - name: Download release binary artifact
+        if: env.new_version == 'true'
+        uses: actions/download-artifact@v3
+        with:
+          name: beacon-firmware-binary
+          path: ./release
+
+      - name: Create Release
+        if: env.new_version == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: v${{ env.VERSION }}
+          body: "Release version ${{ env.VERSION }}"
+          files: release/beacon-firmware.bin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
