@@ -8,6 +8,7 @@ use embassy_time::Timer;
 use esp_idf_svc::{
     eventloop::EspSystemEventLoop,
     hal::{
+        delay::Delay,
         gpio::{AnyInputPin, OutputPin, PinDriver},
         prelude::Peripherals,
         spi::{
@@ -41,10 +42,10 @@ async fn amain(displays: Displays, mut leds: Leds, mut wifi: AsyncWifi<EspWifi<'
     // self_update(&mut leds).await.expect("self update");
 
     loop {
-        info!("BLUE");
+        // info!("BLUE");
         leds.set_all_colors(smart_leds::RGB { r: 0, g: 0, b: 100 });
         Timer::after_secs(1).await;
-        info!("RED");
+        // info!("RED");
         leds.set_all_colors(smart_leds::RGB { r: 100, g: 0, b: 0 });
         Timer::after_secs(1).await;
     }
@@ -72,9 +73,11 @@ fn main() {
         let data = PinDriver::output(peripherals.pins.gpio5.downgrade_output()).expect("data pin");
         let latch = PinDriver::output(peripherals.pins.gpio6.downgrade_output()).expect("data pin");
         let clk = PinDriver::output(peripherals.pins.gpio9.downgrade_output()).expect("data pin");
+        let low_digit = PinDriver::output(peripherals.pins.gpio10).expect("low digit");
+        let high_digit = PinDriver::output(peripherals.pins.gpio11).expect("low digit");
 
         let register = AdvancedShiftRegister::new(data, clk, latch, 0);
-        Displays { register }
+        Displays::new(register, low_digit, high_digit)
     };
 
     let sys_loop = EspSystemEventLoop::take().unwrap();
