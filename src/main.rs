@@ -96,6 +96,8 @@ fn main() {
 
     info!("SNTP init OK");
 
+    todo!("NFC Initialization for passports");
+
     std::thread::Builder::new()
         .stack_size(60_000)
         .spawn(|| {
