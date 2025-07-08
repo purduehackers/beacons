@@ -1,5 +1,6 @@
 use adv_shift_registers::AdvancedShiftRegister;
 use beacons::{
+    anyesp,
     net::{connect_to_network, self_update},
     Displays, Leds,
 };
@@ -20,7 +21,7 @@ use esp_idf_svc::{
     },
     io,
     nvs::EspDefaultNvsPartition,
-    sntp,
+    sntp, sys,
     timer::EspTaskTimerService,
     wifi::{AsyncWifi, EspWifi},
 };
@@ -116,7 +117,10 @@ fn main() {
                 Leds { leds }
             };
 
-            io::vfs::initialize_eventfd(5).unwrap();
+            anyesp!(unsafe {
+                sys::esp_vfs_eventfd_register(&sys::esp_vfs_eventfd_config_t { max_fds: 16 })
+            })
+            .unwrap();
             block_on(amain(displays, leds, wifi))
         })
         .unwrap()

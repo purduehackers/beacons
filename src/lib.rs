@@ -10,9 +10,6 @@ use esp_idf_svc::hal::gpio::{
 use esp_idf_svc::hal::spi::{SpiBusDriver, SpiDriver};
 use esp_idf_svc::hal::task::block_on;
 use esp_idf_svc::sys::EspError;
-use lcd1602_driver::command::LineMode;
-use lcd1602_driver::lcd::{Basic, Ext};
-use lcd1602_driver::sender::ParallelSender;
 use log::info;
 use seven_segment::{SevenSegment, SevenSegmentPins};
 use smart_leds::{gamma, SmartLedsWrite, RGB};
@@ -22,9 +19,10 @@ use std::os::fd::{AsRawFd, IntoRawFd};
 use std::sync::mpsc;
 use ws2812_spi::Ws2812;
 
+pub mod amoled;
+
 #[derive(Debug, Clone)]
 pub enum DisplayCommand {
-    SetLcd(String),
     SetNumber(Option<u8>),
 }
 
@@ -38,34 +36,6 @@ async fn display_thread(
     mut high_digit: PinDriver<'static, Gpio11, Output>,
     rx: mpsc::Receiver<DisplayCommand>,
 ) {
-    let rs = register.get_pin_mut(1, 0, true);
-    let en = register.get_pin_mut(1, 1, true);
-    let db4 = register.get_pin_mut(1, 2, true);
-    let db5 = register.get_pin_mut(1, 3, true);
-    let db6 = register.get_pin_mut(1, 4, true);
-    let db7 = register.get_pin_mut(1, 5, true);
-
-    let mut lcd_delay = Delay::new_default();
-    let mut lcd_sender = ParallelSender::new_4pin_write_only(
-        rs,
-        en,
-        db4,
-        db5,
-        db6,
-        db7,
-        None::<PinDriver<'static, Gpio4, Output>>,
-    );
-
-    let mut lcd = lcd1602_driver::lcd::Lcd::new(
-        &mut lcd_sender,
-        &mut lcd_delay,
-        lcd1602_driver::lcd::Config::default()
-            .set_data_width(lcd1602_driver::command::DataWidth::Bit4)
-            .set_font(lcd1602_driver::command::Font::Font5x8)
-            .set_line_mode(LineMode::TwoLine),
-        20,
-    );
-
     let a = register.get_pin_mut(0, 0, false);
     let b = register.get_pin_mut(0, 1, false);
     let c = register.get_pin_mut(0, 2, false);
@@ -85,8 +55,6 @@ async fn display_thread(
         g,
     }
     .with_common_anode();
-
-    lcd.write_str_to_cur("Beacon Boot");
 
     let mut num_high = Some(4);
     let mut num_low = Some(2);
@@ -115,10 +83,6 @@ async fn display_thread(
             Timer::after_millis(SEG_DELAY).await;
             low_digit.set_low().unwrap();
         }
-
-        lcd.clean_display();
-        Timer::after_millis(5).await;
-        lcd.write_str_to_cur("lol");
     }
 }
 
