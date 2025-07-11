@@ -1,5 +1,6 @@
 use adv_shift_registers::AdvancedShiftRegister;
 use beacons::{
+    amoled::Rm690B0,
     anyesp,
     net::{connect_to_network, self_update},
     Displays, Leds,
@@ -14,7 +15,7 @@ use esp_idf_svc::{
         prelude::Peripherals,
         spi::{
             config::{Config, DriverConfig},
-            SpiBusDriver, SpiDriver,
+            SpiBusDriver, SpiDeviceDriver, SpiDriver,
         },
         task::block_on,
         units::Hertz,
@@ -80,6 +81,19 @@ fn main() {
         let register = AdvancedShiftRegister::new(data, clk, latch, 0);
         Displays::new(register, low_digit, high_digit)
     };
+
+    // let amoled = {
+    //     let reset =
+    //         PinDriver::output(peripherals.pins.gpio39.downgrade_output()).expect("reset pin");
+
+    //     let driver =
+    //         SpiDriver::new_quad(spi, sclk, data0, data1, data2, data3, &DriverConfig::new())
+    //             .expect("qspi driver");
+    //     let cs = PinDriver::output(peripherals.pins.gpio13).expect("valid cs");
+    //     let qspi = SpiDeviceDriver::new(driver, Some(cs), &Config::default()).expect("valid qspi");
+
+    //     Rm690B0::new(qspi, reset).expect("valid amoled")
+    // };
 
     let sys_loop = EspSystemEventLoop::take().unwrap();
     let nvs = EspDefaultNvsPartition::take().unwrap();

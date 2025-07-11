@@ -1,3 +1,4 @@
+#![feature(super_let)]
 pub mod net;
 use adv_shift_registers::wrappers::ShifterPin;
 use adv_shift_registers::AdvancedShiftRegister;

@@ -29,7 +29,7 @@ enterprise = []
 experimental = ["esp-idf-svc/experimental"]
 
 [dependencies]
-embassy-time = { version = "0.4.0" }
+embassy-time = { version = "0.4.0", features = ["generic-queue-64"] }
 log = "0.4"
 esp-idf-svc = { version = "0.51", features = [
     "critical-section",
@@ -54,4 +54,4 @@ ws2812-spi = "0.5.1"
 
 [build-dependencies]
 embuild = { version = "0.32.0", features = ["espidf"] }
-cc = "=1.1.30"     # Version "1.1.30" necessary until a new version of `esp-idf-sys` is released
+cc = "=1.1.30"                                          # Version "1.1.30" necessary until a new version of `esp-idf-sys` is released

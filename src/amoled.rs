@@ -5,7 +5,7 @@ use std::borrow::Borrow;
 use esp_idf_svc::hal::{
     gpio::{AnyOutputPin, Output, Pin, PinDriver},
     prelude::*,
-    spi::*,
+    spi::{config::LineWidth, *},
     task::*,
 };
 
@@ -17,19 +17,37 @@ where
     reset: PinDriver<'d, AnyOutputPin, Output>,
 }
 
+macro_rules! command_ops {
+    ($cmd: expr$(, $itms:expr)*) => {
+        {
+        super let header = 0x0200_u16.to_be_bytes();
+        super let cmd = (($cmd as u16) << 8).to_be_bytes();
+        [
+            Operation::WriteWithWidth(&header, ::esp_idf_svc::hal::spi::config::LineWidth::Single),
+            Operation::WriteWithWidth(&cmd, ::esp_idf_svc::hal::spi::config::LineWidth::Single),
+            $($itms),*
+        ]
+        }
+    };
+}
+
+macro_rules! write_buf {
+    ($buf: expr) => {{
+        super let buf = $buf;
+
+        Operation::Write(&buf)
+    }};
+}
+
 impl<'d, T> Rm690B0<'d, T>
 where
     T: Borrow<SpiDriver<'d>> + 'd,
 {
-    pub async fn new(qspi: SpiDeviceDriver<'d, T>, reset: AnyOutputPin) -> Result<Self> {
-        let mut s = Self {
+    pub fn new(qspi: SpiDeviceDriver<'d, T>, reset: AnyOutputPin) -> Result<Self> {
+        Ok(Self {
             qspi,
             reset: PinDriver::output(reset)?,
-        };
-
-        s.reset().await?;
-
-        Ok(s)
+        })
     }
 
     pub async fn reset(&mut self) -> Result<()> {
@@ -49,6 +67,15 @@ where
     }
 
     async fn write_command<'a>(&mut self, cmd: u8, data: &mut [Operation<'a>]) -> Result<()> {
+        let cmd = (cmd as u16) << 8;
         todo!()
+    }
+
+    async fn manufacturer_init(&mut self) -> Result<()> {
+        let mut ops = command_ops![0xFE, write_buf!([0x20])];
+
+        self.qspi.transaction_async(&mut ops).await?;
+
+        Ok(())
     }
 }
