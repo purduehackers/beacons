@@ -11,10 +11,10 @@ use esp_idf_svc::{
     eventloop::EspSystemEventLoop,
     hal::{
         delay::Delay,
-        gpio::{AnyInputPin, OutputPin, PinDriver},
+        gpio::{AnyInputPin, IOPin, OutputPin, PinDriver},
         prelude::Peripherals,
         spi::{
-            config::{Config, DriverConfig},
+            config::{Config, DriverConfig, Duplex, MODE_3},
             SpiBusDriver, SpiDeviceDriver, SpiDriver,
         },
         task::block_on,
@@ -29,13 +29,22 @@ use esp_idf_svc::{
 use log::info;
 use ws2812_spi::Ws2812;
 
-async fn amain(displays: Displays, mut leds: Leds, mut wifi: AsyncWifi<EspWifi<'static>>) {
+async fn amain(
+    displays: Displays,
+    mut leds: Leds,
+    mut wifi: AsyncWifi<EspWifi<'static>>,
+    mut amoled: Rm690B0<'static, SpiDriver<'static>>,
+) {
+    info!("Main async process started");
     // Red before wifi
     leds.set_all_colors(smart_leds::RGB { r: 100, g: 0, b: 0 });
 
     connect_to_network(&mut wifi)
         .await
         .expect("wifi connection");
+
+    amoled.init().await.expect("init");
+    info!("AMOLED init OK");
 
     // Blue before update
     leds.set_all_colors(smart_leds::RGB { r: 0, g: 0, b: 100 });
@@ -46,9 +55,15 @@ async fn amain(displays: Displays, mut leds: Leds, mut wifi: AsyncWifi<EspWifi<'
     loop {
         // info!("BLUE");
         leds.set_all_colors(smart_leds::RGB { r: 0, g: 0, b: 100 });
+
+        amoled.all_pixels(true).expect("all pixels on");
+
         Timer::after_secs(1).await;
         // info!("RED");
         leds.set_all_colors(smart_leds::RGB { r: 100, g: 0, b: 0 });
+
+        amoled.all_pixels(false).expect("all pixels on");
+
         Timer::after_secs(1).await;
     }
 }
@@ -82,18 +97,27 @@ fn main() {
         Displays::new(register, low_digit, high_digit)
     };
 
-    // let amoled = {
-    //     let reset =
-    //         PinDriver::output(peripherals.pins.gpio39.downgrade_output()).expect("reset pin");
+    let amoled = {
+        let driver = SpiDriver::new_quad(
+            peripherals.spi3,
+            peripherals.pins.gpio18,
+            peripherals.pins.gpio17,
+            peripherals.pins.gpio16,
+            peripherals.pins.gpio14,
+            peripherals.pins.gpio8,
+            &DriverConfig::new(),
+        )
+        .expect("qspi driver");
 
-    //     let driver =
-    //         SpiDriver::new_quad(spi, sclk, data0, data1, data2, data3, &DriverConfig::new())
-    //             .expect("qspi driver");
-    //     let cs = PinDriver::output(peripherals.pins.gpio13).expect("valid cs");
-    //     let qspi = SpiDeviceDriver::new(driver, Some(cs), &Config::default()).expect("valid qspi");
+        let qspi = SpiDeviceDriver::new(
+            driver,
+            Some(peripherals.pins.gpio13),
+            &Config::default().data_mode(MODE_3).duplex(Duplex::Half),
+        )
+        .expect("valid qspi");
 
-    //     Rm690B0::new(qspi, reset).expect("valid amoled")
-    // };
+        Rm690B0::new(qspi, peripherals.pins.gpio39.downgrade_output()).expect("valid amoled")
+    };
 
     let sys_loop = EspSystemEventLoop::take().unwrap();
     let nvs = EspDefaultNvsPartition::take().unwrap();
@@ -111,7 +135,7 @@ fn main() {
 
     info!("SNTP init OK");
 
-    todo!("NFC Initialization for passports");
+    // todo!("NFC Initialization for passports");
 
     std::thread::Builder::new()
         .stack_size(60_000)
@@ -124,7 +148,7 @@ fn main() {
                     &DriverConfig::new(),
                 )
                 .expect("valid spi");
-                let cfg = Config::new().baudrate(Hertz(2_500_000));
+                let cfg = Config::new().baudrate(Hertz(1_500_000));
                 let bus = SpiBusDriver::new(driver, &cfg).expect("valid spi bus");
 
                 let leds = Ws2812::new(bus);
@@ -135,7 +159,7 @@ fn main() {
                 sys::esp_vfs_eventfd_register(&sys::esp_vfs_eventfd_config_t { max_fds: 16 })
             })
             .unwrap();
-            block_on(amain(displays, leds, wifi))
+            block_on(amain(displays, leds, wifi, amoled))
         })
         .unwrap()
         .join()

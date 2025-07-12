@@ -57,8 +57,8 @@ async fn display_thread(
     }
     .with_common_anode();
 
-    let mut num_high = Some(4);
-    let mut num_low = Some(2);
+    let mut num_high = Some(9);
+    let mut num_low = Some(9);
     loop {
         match rx.try_recv() {
             Ok(msg) => {
@@ -107,7 +107,7 @@ impl Displays {
     }
 }
 
-const NUM_BASE_LEDS: usize = 15;
+const NUM_BASE_LEDS: usize = 5;
 
 /// The LEDs will be configured to have some number as the base then the last one as the beacon
 pub struct Leds {
