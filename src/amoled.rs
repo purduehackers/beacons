@@ -106,9 +106,8 @@ where
 
         Timer::after_millis(10).await;
 
-        // Skip: Tearing Effect since not hooked up and considered optional
-        // self.qspi
-        //     .transaction(&mut command_ops![0x35, write_buf!([0x00])])?;
+        // Tearing Effect off
+        self.qspi.transaction(&mut command_ops![0x34])?;
 
         // Display brightness 0
         let mut ops = command_ops![0x51, write_buf!([0x00])];
