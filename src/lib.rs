@@ -61,9 +61,18 @@ async fn display_thread(
     let mut num_low = Some(9);
     loop {
         match rx.try_recv() {
-            Ok(msg) => {
-                todo!()
-            }
+            Ok(msg) => match msg {
+                DisplayCommand::SetNumber(n) => match n {
+                    Some(n) => {
+                        num_high = Some(n >> 4);
+                        num_low = Some(n & 0x0F);
+                    }
+                    None => {
+                        num_high = None;
+                        num_low = None;
+                    }
+                },
+            },
             Err(mpsc::TryRecvError::Empty) => {}
             Err(mpsc::TryRecvError::Disconnected) => return,
         }

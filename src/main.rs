@@ -30,7 +30,7 @@ use log::info;
 use ws2812_spi::Ws2812;
 
 async fn amain(
-    displays: Displays,
+    mut displays: Displays,
     mut leds: Leds,
     mut wifi: AsyncWifi<EspWifi<'static>>,
     mut amoled: Rm690B0<'static, SpiDriver<'static>>,
@@ -52,19 +52,24 @@ async fn amain(
     // Do this later once I have a build system working
     // self_update(&mut leds).await.expect("self update");
 
+    let mut counter = 0_u8;
     loop {
+        displays.set_number(Some(counter));
         // info!("BLUE");
         leds.set_all_colors(smart_leds::RGB { r: 0, g: 0, b: 100 });
 
         amoled.all_pixels(true).expect("all pixels on");
 
         Timer::after_secs(1).await;
+        counter = counter.wrapping_add(1);
+        displays.set_number(Some(counter));
         // info!("RED");
         leds.set_all_colors(smart_leds::RGB { r: 100, g: 0, b: 0 });
 
         amoled.all_pixels(false).expect("all pixels on");
 
         Timer::after_secs(1).await;
+        counter = counter.wrapping_add(1);
     }
 }
 
