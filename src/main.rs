@@ -1,6 +1,6 @@
 use adv_shift_registers::AdvancedShiftRegister;
 use beacons::{
-    amoled::Rm690B0,
+    amoled::{self, Rm690B0},
     anyesp,
     net::{connect_to_network, self_update},
     Displays, Leds,
@@ -74,8 +74,32 @@ async fn amain(
             .draw(&mut amoled)?;
     }
 
+    // for i in 1..16 {
+    //     for j in 1..16 {
+    //         let color: u8 = ((i - 1) * 16) + (j - 1);
+
+    //         let width: i32 = (amoled::WIDTH / 16) as i32;
+    //         let height: i32 = (amoled::HEIGHT / 16) as i32;
+
+    //         Rectangle::new(
+    //             Point::new((i - 1) as i32 * width, (j - 1) as i32 * height),
+    //             Size::new(width as u32, height as u32),
+    //         )
+    //         .into_styled(PrimitiveStyle::with_fill(Rgb888::new(color, color, color)))
+    //         .draw(&mut amoled)?;
+    //     }
+    // }
+    //
+    // Rectangle::new(
+    //     Point::new(0, 0),
+    //     Size::new(amoled::WIDTH as u32, amoled::HEIGHT as u32),
+    // )
+    // .into_styled(PrimitiveStyle::with_fill(Rgb888::new(100, 255, 100)))
+    // .draw(&mut amoled)?;
+
     info!("Draw done");
-    Timer::after_secs(5).await;
+
+    // Timer::after_secs(5).await;
 
     // Blue before update
     leds.set_all_colors(smart_leds::RGB { r: 0, g: 0, b: 100 });
@@ -89,7 +113,22 @@ async fn amain(
         // info!("BLUE");
         leds.set_all_colors(smart_leds::RGB { r: 0, g: 0, b: 100 });
 
-        // amoled.all_pixels(true).expect("all pixels on");
+        // // amoled.all_pixels(true).expect("all pixels on");
+        // for i in 1..16 {
+        //     for j in 1..16 {
+        //         let color: u8 = ((i - 1) * 16) + (j - 1);
+
+        //         let width: i32 = (amoled::WIDTH / 16) as i32;
+        //         let height: i32 = (amoled::HEIGHT / 16) as i32;
+
+        //         Rectangle::new(
+        //             Point::new((i - 1) as i32 * width, (j - 1) as i32 * height),
+        //             Size::new(width as u32, height as u32),
+        //         )
+        //         .into_styled(PrimitiveStyle::with_fill(Rgb888::new(color, color, color)))
+        //         .draw(&mut amoled)?;
+        //     }
+        // }
 
         Timer::after_secs(1).await;
         counter = counter.wrapping_add(1);
@@ -98,6 +137,12 @@ async fn amain(
         leds.set_all_colors(smart_leds::RGB { r: 100, g: 0, b: 0 });
 
         // amoled.all_pixels(false).expect("all pixels on");
+        // Rectangle::new(
+        //     Point::new(0, 0),
+        //     Size::new(amoled::WIDTH as u32, amoled::HEIGHT as u32),
+        // )
+        // .into_styled(PrimitiveStyle::with_fill(Rgb888::WHITE))
+        // .draw(&mut amoled)?;
 
         Timer::after_secs(1).await;
         counter = counter.wrapping_add(1);
@@ -153,7 +198,8 @@ fn main() {
             &Config::default()
                 .data_mode(MODE_3)
                 .duplex(Duplex::Half)
-                .baudrate(Hertz(80_000_000)),
+                .baudrate(Hertz(80_000_000))
+                .queue_size(10),
         )
         .expect("valid qspi");
 

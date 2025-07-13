@@ -22,8 +22,8 @@ use esp_idf_svc::hal::{
 
 use crate::anyesp;
 
-const WIDTH: usize = 450;
-const HEIGHT: usize = 600;
+pub const WIDTH: usize = 450;
+pub const HEIGHT: usize = 600;
 
 pub struct Rm690B0<'d, T>
 where
@@ -148,8 +148,8 @@ where
         Timer::after_millis(10).await;
 
         // Brightness
-        // Max is 0xFF but only using 75% for Feather since regulator is kinda weak
-        let mut ops = command_ops![0x51, write_buf!([0xBF])];
+        // Max is 0xFF but only using 50% for Feather since regulator is kinda weak
+        let mut ops = command_ops![0x51, write_buf!([0x80])];
         self.qspi.transaction(&mut ops)?;
 
         Ok(())
