@@ -4,23 +4,67 @@ use adv_shift_registers::wrappers::ShifterPin;
 use adv_shift_registers::AdvancedShiftRegister;
 use anyhow::anyhow;
 use embassy_time::Timer;
+use embedded_hal::digital::OutputPin as EOP;
 use esp_idf_svc::hal::delay::Delay;
 use esp_idf_svc::hal::gpio::{
     AnyOutputPin, Gpio10, Gpio11, Gpio4, InputPin, Output, OutputPin, PinDriver,
 };
-use esp_idf_svc::hal::spi::{SpiBusDriver, SpiDriver};
+use esp_idf_svc::hal::spi::{SpiBusDriver, SpiDeviceDriver, SpiDriver};
 use esp_idf_svc::hal::task::block_on;
 use esp_idf_svc::sys::EspError;
 use log::info;
 use seven_segment::{SevenSegment, SevenSegmentPins};
+use shiftreg_spi::SipoShiftReg;
 use smart_leds::{gamma, SmartLedsWrite, RGB};
 use std::net::TcpStream;
 use std::ops::DerefMut;
 use std::os::fd::{AsRawFd, IntoRawFd};
 use std::sync::mpsc;
+use std::time::{Duration, Instant};
 use ws2812_spi::Ws2812;
 
 pub mod amoled;
+
+pub struct SysTimer {
+    start: Instant,
+    duration: Duration,
+}
+
+impl SysTimer {
+    pub fn new() -> SysTimer {
+        SysTimer {
+            start: Instant::now(),
+
+            duration: Duration::from_millis(0),
+        }
+    }
+}
+
+impl Default for SysTimer {
+    fn default() -> SysTimer {
+        SysTimer::new()
+    }
+}
+
+impl pn532::CountDown for SysTimer {
+    type Time = Duration;
+
+    fn start<T>(&mut self, count: T)
+    where
+        T: Into<Self::Time>,
+    {
+        self.start = Instant::now();
+        self.duration = count.into();
+    }
+
+    fn wait(&mut self) -> pn532::nb::Result<(), std::convert::Infallible> {
+        if (Instant::now() - self.start) >= self.duration {
+            Ok(())
+        } else {
+            Err(pn532::nb::Error::WouldBlock)
+        }
+    }
+}
 
 #[derive(Debug, Clone)]
 pub enum DisplayCommand {
@@ -32,19 +76,14 @@ pub struct Displays {
 }
 
 async fn display_thread(
-    mut register: AdvancedShiftRegister<2, PinDriver<'static, AnyOutputPin, Output>>,
+    mut register: SipoShiftReg<SpiDeviceDriver<'static, std::sync::Arc<SpiDriver<'static>>>, 8, 1>,
     mut low_digit: PinDriver<'static, Gpio10, Output>,
     mut high_digit: PinDriver<'static, Gpio11, Output>,
     rx: mpsc::Receiver<DisplayCommand>,
 ) {
-    let a = register.get_pin_mut(0, 0, false);
-    let b = register.get_pin_mut(0, 1, false);
-    let c = register.get_pin_mut(0, 2, false);
-    let d = register.get_pin_mut(0, 3, false);
-    let e = register.get_pin_mut(0, 4, false);
-    let f = register.get_pin_mut(0, 5, false);
-    let g = register.get_pin_mut(0, 6, false);
-    register.get_shifter_mut(0).set_value(0xff);
+    register.set_lazy(true);
+    let [a, b, c, d, e, f, g, mut dot] = register.split();
+    dot.set_high().expect("dot off");
 
     let mut seg = SevenSegmentPins {
         a,
@@ -80,7 +119,7 @@ async fn display_thread(
         const SEG_DELAY: u64 = 3;
         if let Some(high) = num_high {
             seg.set(high).unwrap();
-            register.update_shifters();
+            register.update().expect("valid update");
             high_digit.set_high().unwrap();
             Timer::after_millis(SEG_DELAY).await;
             high_digit.set_low().unwrap();
@@ -88,7 +127,7 @@ async fn display_thread(
 
         if let Some(low) = num_low {
             seg.set(low).unwrap();
-            register.update_shifters();
+            register.update().expect("valid update");
             low_digit.set_high().unwrap();
             Timer::after_millis(SEG_DELAY).await;
             low_digit.set_low().unwrap();
@@ -98,7 +137,7 @@ async fn display_thread(
 
 impl Displays {
     pub fn new(
-        register: AdvancedShiftRegister<2, PinDriver<'static, AnyOutputPin, Output>>,
+        register: SipoShiftReg<SpiDeviceDriver<'static, std::sync::Arc<SpiDriver<'static>>>, 8, 1>,
         mut low_digit: PinDriver<'static, Gpio10, Output>,
         mut high_digit: PinDriver<'static, Gpio11, Output>,
     ) -> Self {

@@ -3,16 +3,6 @@
 version = 3
 
 [[package]]
-name = "adv-shift-registers"
-version = "0.2.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "519bc9536b1d6a133dfc208cbf1a0e5ac6ccac1fe0c0ce5f44f5a43f85096bc8"
-dependencies = [
- "embedded-hal 1.0.0",
- "log",
-]
-
-[[package]]
 name = "aho-corasick"
 version = "1.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -171,7 +161,6 @@ checksum = "7b7e4c2464d97fe331d41de9d5db0def0a96f4d823b8b32a2efd503578988973"
 name = "beacons"
 version = "0.1.0"
 dependencies = [
- "adv-shift-registers",
  "anyhow",
  "async-io",
  "build-time",
@@ -180,16 +169,19 @@ dependencies = [
  "embassy-time",
  "embedded-graphics",
  "embedded-graphics-core",
+ "embedded-hal 1.0.0",
  "embuild 0.32.0",
  "esp-idf-svc",
  "http",
  "lcd1602-driver",
  "lightning-time",
  "log",
+ "pn532",
  "semver",
  "serde",
  "serde_json",
  "seven_segment",
+ "shiftreg-spi",
  "smart-leds",
  "url",
  "ws2812-spi",
@@ -1670,6 +1662,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
 
 [[package]]
+name = "pn532"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ce656b2f9335bedbd8806597f6f78e644a955366673cd9280a0fb67a0d7b35a1"
+dependencies = [
+ "embedded-hal 1.0.0",
+ "nb 1.1.0",
+]
+
+[[package]]
 name = "polling"
 version = "3.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1933,6 +1935,15 @@ name = "seven_segment"
 version = "0.2.1"
 source = "git+https://github.com/ImTheSquid/seven_segment.git#8156c4499c114285ce493f80b256c87759374a4d"
 dependencies = [
+ "embedded-hal 1.0.0",
+]
+
+[[package]]
+name = "shiftreg-spi"
+version = "0.1.0"
+source = "git+https://github.com/tana/shiftreg-spi.git?rev=3541b18#3541b18be71c967ce54531afd80f6eb0c7d6617c"
+dependencies = [
+ "critical-section",
  "embedded-hal 1.0.0",
 ]
 

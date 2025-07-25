@@ -3,7 +3,7 @@ use beacons::{
     amoled::{self, Rm690B0},
     anyesp,
     net::{connect_to_network, self_update},
-    Displays, Leds,
+    Displays, Leds, SysTimer,
 };
 use build_time::build_time_utc;
 use embassy_time::Timer;
@@ -28,13 +28,15 @@ use esp_idf_svc::{
     wifi::{AsyncWifi, EspWifi},
 };
 use log::info;
+use pn532::Pn532;
+use shiftreg_spi::SipoShiftReg;
 use ws2812_spi::Ws2812;
 
 async fn amain(
     mut displays: Displays,
     mut leds: Leds,
     mut wifi: AsyncWifi<EspWifi<'static>>,
-    mut amoled: Rm690B0<'static, SpiDriver<'static>>,
+    mut amoled: Rm690B0<'static, std::sync::Arc<SpiDriver<'static>>>,
 ) -> Result<(), anyhow::Error> {
     info!("Main async process started");
     // Red before wifi
@@ -169,31 +171,40 @@ fn main() {
 
     let peripherals = Peripherals::take().expect("valid peripherals");
 
+    let driver = SpiDriver::new_quad(
+        peripherals.spi3,
+        peripherals.pins.gpio18,
+        peripherals.pins.gpio17,
+        peripherals.pins.gpio16,
+        peripherals.pins.gpio14,
+        peripherals.pins.gpio8,
+        &DriverConfig::new(),
+    )
+    .expect("qspi driver");
+
+    let driver = std::sync::Arc::new(driver);
+
     let displays = {
-        let data = PinDriver::output(peripherals.pins.gpio5.downgrade_output()).expect("data pin");
-        let latch = PinDriver::output(peripherals.pins.gpio6.downgrade_output()).expect("data pin");
-        let clk = PinDriver::output(peripherals.pins.gpio9.downgrade_output()).expect("data pin");
+        // let data = PinDriver::output(peripherals.pins.gpio5.downgrade_output()).expect("data pin");
+        // let latch = PinDriver::output(peripherals.pins.gpio6.downgrade_output()).expect("data pin");
+        // let clk = PinDriver::output(peripherals.pins.gpio9.downgrade_output()).expect("data pin");
         let low_digit = PinDriver::output(peripherals.pins.gpio10).expect("low digit");
         let high_digit = PinDriver::output(peripherals.pins.gpio11).expect("low digit");
 
-        let register = AdvancedShiftRegister::new(data, clk, latch, 0);
+        let spi = SpiDeviceDriver::new(
+            driver.clone(),
+            Some(peripherals.pins.gpio6),
+            &Config::default().bit_order(esp_idf_svc::hal::spi::config::BitOrder::MsbFirst),
+        )
+        .expect("valid sp");
+
+        let register = SipoShiftReg::new(spi);
         Displays::new(register, low_digit, high_digit)
     };
 
     let amoled = {
-        let driver = SpiDriver::new_quad(
-            peripherals.spi3,
-            peripherals.pins.gpio18,
-            peripherals.pins.gpio17,
-            peripherals.pins.gpio16,
-            peripherals.pins.gpio14,
-            peripherals.pins.gpio8,
-            &DriverConfig::new(),
-        )
-        .expect("qspi driver");
-
         let qspi = SpiDeviceDriver::new(
-            driver,
+            driver.clone(),
             Some(peripherals.pins.gpio13),
             &Config::default()
                 .data_mode(MODE_3)
@@ -204,6 +215,25 @@ fn main() {
         .expect("valid qspi");
 
         Rm690B0::new(qspi, peripherals.pins.gpio39.downgrade_output()).expect("valid amoled")
+    };
+
+    let (nfc_irq, nfc) = {
+        let spi = SpiDeviceDriver::new(
+            driver,
+            Some(peripherals.pins.gpio38),
+            &Config::default()
+                .bit_order(esp_idf_svc::hal::spi::config::BitOrder::LsbFirst)
+                .duplex(Duplex::Full),
+        )
+        .expect("valid spi");
+
+        let irq = PinDriver::input(peripherals.pins.gpio12).expect("irq pin");
+
+        let interface = pn532::spi::SPIInterface { spi };
+
+        let nfc = Pn532::<_, _, 64>::new(interface, SysTimer::default());
+
+        (irq, nfc)
     };
 
     let sys_loop = EspSystemEventLoop::take().unwrap();
