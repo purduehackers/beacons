@@ -1,7 +1,12 @@
-use std::sync::{
-    atomic::{AtomicU16, AtomicU32},
-    mpsc::channel,
-    Mutex,
+use std::{
+    convert::Infallible,
+    ops::{Deref, DerefMut},
+    sync::{
+        atomic::{AtomicU16, AtomicU32},
+        mpsc::channel,
+        Mutex,
+    },
+    time::Duration,
 };
 
 use anyhow::anyhow;
@@ -9,17 +14,19 @@ use beacons::{
     amoled::{self, Rm690B0},
     anyesp,
     net::{connect_to_network, self_update},
-    Displays, Leds, SysTimer,
+    Displays, Leds,
 };
 use build_time::build_time_utc;
 use embassy_time::Timer;
 use embedded_graphics::{pixelcolor::Rgb888, prelude::*, primitives::*};
+use embedded_hal::spi::{MODE_1, MODE_2};
 use esp_idf_svc::{
     eventloop::EspSystemEventLoop,
     hal::{
         delay::Delay,
-        gpio::{AnyInputPin, IOPin, Input, InputPin, OutputPin, PinDriver},
+        gpio::{AnyInputPin, IOPin, Input, InputPin, OutputPin, Pin, PinDriver},
         i2c::{config::Config as I2cConfig, I2cDriver},
+        peripheral::Peripheral,
         prelude::Peripherals,
         spi::{
             config::{Config, DriverConfig, Duplex, MODE_3},
@@ -36,19 +43,45 @@ use esp_idf_svc::{
 };
 use ft6336::{touch::PointAction, Ft6336};
 use log::info;
-use pn532::Pn532;
+use pn532::{
+    i2c::{I2CInterface, I2CInterfaceWithIrq},
+    Interface, Pn532, Request,
+};
 use shared_bus::I2cProxy;
 use shiftreg_spi::SipoShiftReg;
 use smart_leds::colors::RED;
 use ws2812_spi::Ws2812;
+
+type I2c = I2cProxy<'static, Mutex<I2cDriver<'static>>>;
+
+struct InfallibleDriver<T>(T);
+
+impl<T> embedded_hal::digital::ErrorType for InfallibleDriver<T> {
+    type Error = Infallible;
+}
+
+impl<T: embedded_hal::digital::InputPin> embedded_hal::digital::InputPin for InfallibleDriver<T> {
+    fn is_high(&mut self) -> Result<bool, Self::Error> {
+        Ok(self.0.is_high().unwrap())
+    }
+
+    fn is_low(&mut self) -> Result<bool, Self::Error> {
+        Ok(self.0.is_low().unwrap())
+    }
+}
 
 async fn amain(
     mut displays: Displays,
     mut leds: Leds,
     mut wifi: AsyncWifi<EspWifi<'static>>,
     mut amoled: Rm690B0<'static, std::sync::Arc<SpiDriver<'static>>>,
-    mut touch: Ft6336<I2cProxy<'static, Mutex<I2cDriver<'static>>>>,
+    mut touch: Ft6336<I2c>,
     mut touch_irq: PinDriver<'static, AnyInputPin, Input>,
+    mut nfc: Pn532<
+        I2CInterfaceWithIrq<I2c, InfallibleDriver<PinDriver<'static, AnyInputPin, Input>>>,
+        (),
+        64,
+    >,
 ) -> Result<(), anyhow::Error> {
     info!("Main async process started");
     // Red before wifi
@@ -60,6 +93,13 @@ async fn amain(
 
     amoled.init().await.expect("init");
     info!("AMOLED init OK");
+
+    let mut resp = nfc.process_async(&Request::GET_FIRMWARE_VERSION, 4).await;
+    while resp.is_err() {
+        resp = nfc.process_async(&Request::GET_FIRMWARE_VERSION, 4).await;
+        Timer::after_millis(10).await;
+    }
+    info!("NFC firmware version {:?}", resp.unwrap());
 
     let border_stroke = PrimitiveStyleBuilder::new()
         .stroke_color(Rgb888::RED)
@@ -121,6 +161,14 @@ async fn amain(
     // Do this later once I have a build system working
     // self_update(&mut leds).await.expect("self update");
 
+    // tokio::task::spawn(async move {
+    //     let res = nfc
+    //         .process_async(&Request::ntag_read(0), 270)
+    //         .await
+    //         .expect("valid read");
+    //     println!("Got data: {res:?}");
+    // });
+
     let (touch_tx, touch_rx) = channel();
 
     tokio::task::spawn(async move {
@@ -176,7 +224,7 @@ async fn amain(
         //     }
         // }
 
-        Timer::after_millis(500).await;
+        Timer::after_millis(750).await;
         counter = counter.wrapping_add(1);
         displays.set_number(Some(counter));
         // info!("RED");
@@ -190,7 +238,7 @@ async fn amain(
         // .into_styled(PrimitiveStyle::with_fill(Rgb888::WHITE))
         // .draw(&mut amoled)?;
 
-        Timer::after_millis(500).await;
+        Timer::after_millis(750).await;
         counter = counter.wrapping_add(1);
     }
 
@@ -287,7 +335,7 @@ fn main() {
         (irq, touch)
     };
 
-    let (nfc_irq, nfc) = {
+    let nfc = {
         let spi = SpiDeviceDriver::new(
             driver,
             Some(peripherals.pins.gpio38),
@@ -297,15 +345,16 @@ fn main() {
         )
         .expect("valid spi");
 
-        let irq = PinDriver::input(peripherals.pins.gpio12).expect("irq pin");
+        let irq = PinDriver::input(peripherals.pins.gpio12.downgrade_input()).expect("irq pin");
 
-        let interface = pn532::i2c::I2CInterface {
+        let interface = pn532::i2c::I2CInterfaceWithIrq {
             i2c: bus.acquire_i2c(),
+            irq: InfallibleDriver(irq),
         };
 
-        let nfc = Pn532::<_, _, 64>::new(interface, SysTimer::default());
+        let mut nfc = Pn532::<_, _, 64>::new_async(interface);
 
-        (irq, nfc)
+        nfc
     };
 
     let sys_loop = EspSystemEventLoop::take().unwrap();
@@ -337,7 +386,7 @@ fn main() {
                     &DriverConfig::new(),
                 )
                 .expect("valid spi");
-                let cfg = Config::new().baudrate(Hertz(1_500_000));
+                let cfg = Config::new().baudrate(Hertz(2_000_000)).data_mode(MODE_1);
                 let bus = SpiBusDriver::new(driver, &cfg).expect("valid spi bus");
 
                 let leds = Ws2812::new(bus);
@@ -360,6 +409,7 @@ fn main() {
                     amoled,
                     amoled_touch,
                     amoled_touch_irq,
+                    nfc,
                 ))
                 .expect("amain ok")
         })

@@ -23,47 +23,6 @@ use ws2812_spi::Ws2812;
 
 pub mod amoled;
 
-pub struct SysTimer {
-    start: Instant,
-    duration: Duration,
-}
-
-impl SysTimer {
-    pub fn new() -> SysTimer {
-        SysTimer {
-            start: Instant::now(),
-
-            duration: Duration::from_millis(0),
-        }
-    }
-}
-
-impl Default for SysTimer {
-    fn default() -> SysTimer {
-        SysTimer::new()
-    }
-}
-
-impl pn532::CountDown for SysTimer {
-    type Time = Duration;
-
-    fn start<T>(&mut self, count: T)
-    where
-        T: Into<Self::Time>,
-    {
-        self.start = Instant::now();
-        self.duration = count.into();
-    }
-
-    fn wait(&mut self) -> pn532::nb::Result<(), std::convert::Infallible> {
-        if (Instant::now() - self.start) >= self.duration {
-            Ok(())
-        } else {
-            Err(pn532::nb::Error::WouldBlock)
-        }
-    }
-}
-
 #[derive(Debug, Clone)]
 pub enum DisplayCommand {
     SetNumber(Option<u8>),
