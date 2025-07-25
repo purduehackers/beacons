@@ -56,8 +56,10 @@ pn532 = "0.5.0"
 shiftreg-spi = { git = "https://github.com/tana/shiftreg-spi.git", rev = "3541b18" }
 embedded-hal = "1.0.0"
 ft6336 = { git = "https://github.com/hyx0329/ft6336-rs.git", rev = "858caa63" }
-embedded-hal-bus = { version = "0.2.0", features = ["std"] }
-static_cell = { version = "2.1.1", features = ["nightly"] }
+shared-bus = { git = "https://github.com/Sycrosity/shared-bus.git", version = "0.4.0", features = [
+    "std",
+], rev = "e495929c" }
+tokio = { version = "1.46.1", features = ["rt"] }
 
 [build-dependencies]
 embuild = { version = "0.32.0", features = ["espidf"] }

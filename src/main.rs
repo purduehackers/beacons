@@ -1,5 +1,10 @@
-use std::sync::Mutex;
+use std::sync::{
+    atomic::{AtomicU16, AtomicU32},
+    mpsc::channel,
+    Mutex,
+};
 
+use anyhow::anyhow;
 use beacons::{
     amoled::{self, Rm690B0},
     anyesp,
@@ -13,7 +18,7 @@ use esp_idf_svc::{
     eventloop::EspSystemEventLoop,
     hal::{
         delay::Delay,
-        gpio::{AnyInputPin, IOPin, OutputPin, PinDriver},
+        gpio::{AnyInputPin, IOPin, Input, InputPin, OutputPin, PinDriver},
         i2c::{config::Config as I2cConfig, I2cDriver},
         prelude::Peripherals,
         spi::{
@@ -29,11 +34,12 @@ use esp_idf_svc::{
     timer::EspTaskTimerService,
     wifi::{AsyncWifi, EspWifi},
 };
-use ft6336::Ft6336;
+use ft6336::{touch::PointAction, Ft6336};
 use log::info;
 use pn532::Pn532;
+use shared_bus::I2cProxy;
 use shiftreg_spi::SipoShiftReg;
-use static_cell::StaticCell;
+use smart_leds::colors::RED;
 use ws2812_spi::Ws2812;
 
 async fn amain(
@@ -41,6 +47,8 @@ async fn amain(
     mut leds: Leds,
     mut wifi: AsyncWifi<EspWifi<'static>>,
     mut amoled: Rm690B0<'static, std::sync::Arc<SpiDriver<'static>>>,
+    mut touch: Ft6336<I2cProxy<'static, Mutex<I2cDriver<'static>>>>,
+    mut touch_irq: PinDriver<'static, AnyInputPin, Input>,
 ) -> Result<(), anyhow::Error> {
     info!("Main async process started");
     // Red before wifi
@@ -113,6 +121,38 @@ async fn amain(
     // Do this later once I have a build system working
     // self_update(&mut leds).await.expect("self update");
 
+    let (touch_tx, touch_rx) = channel();
+
+    tokio::task::spawn(async move {
+        loop {
+            touch_irq.wait_for_falling_edge().await.unwrap();
+            for touch in touch
+                .touch_points_iter()
+                .unwrap()
+                .filter(|p| matches!(p.action, PointAction::Contact))
+            {
+                touch_tx.send(touch).unwrap();
+            }
+        }
+    });
+
+    tokio::task::spawn(async move {
+        loop {
+            while let Ok(point) = touch_rx.try_recv() {
+                Rectangle::with_center(
+                    Point {
+                        x: point.x as i32,
+                        y: point.y as i32,
+                    },
+                    Size::new_equal(20),
+                )
+                .draw_styled(&PrimitiveStyle::with_fill(Rgb888::WHITE), &mut amoled)
+                .unwrap();
+            }
+            Timer::after_millis(10).await;
+        }
+    });
+
     let mut counter = 0_u8;
     loop {
         displays.set_number(Some(counter));
@@ -136,7 +176,7 @@ async fn amain(
         //     }
         // }
 
-        Timer::after_secs(1).await;
+        Timer::after_millis(500).await;
         counter = counter.wrapping_add(1);
         displays.set_number(Some(counter));
         // info!("RED");
@@ -150,7 +190,7 @@ async fn amain(
         // .into_styled(PrimitiveStyle::with_fill(Rgb888::WHITE))
         // .draw(&mut amoled)?;
 
-        Timer::after_secs(1).await;
+        Timer::after_millis(500).await;
         counter = counter.wrapping_add(1);
     }
 
@@ -225,15 +265,11 @@ fn main() {
         peripherals.i2c0,
         peripherals.pins.gpio3,
         peripherals.pins.gpio4,
-        &I2cConfig::default(),
+        &I2cConfig::default().baudrate(Hertz(100_000)),
     )
     .expect("i2c");
 
-    static I2C_BUS: StaticCell<Mutex<I2cDriver<'static>>> = StaticCell::new();
-    let res = I2C_BUS.init(std::sync::Mutex::new(i2c));
-
-    let bus1 = embedded_hal_bus::i2c::MutexDevice::new(&res);
-    let bus2 = embedded_hal_bus::i2c::MutexDevice::new(&res);
+    let bus = shared_bus::new_std!(I2cDriver = i2c).expect("i2c bus");
 
     let (amoled_touch_irq, amoled_touch) = {
         let mut reset = PinDriver::output(peripherals.pins.gpio5).expect("reset");
@@ -241,10 +277,13 @@ fn main() {
         std::thread::sleep(std::time::Duration::from_millis(5));
         reset.set_high().expect("reset high");
 
-        let irq = PinDriver::input(peripherals.pins.gpio9).expect("irq");
+        let mut irq = PinDriver::input(peripherals.pins.gpio9.downgrade_input()).expect("irq");
+        irq.set_interrupt_type(esp_idf_svc::hal::gpio::InterruptType::NegEdge)
+            .expect("set irq mode");
 
-        let mut touch = Ft6336::new(bus1);
+        let mut touch = Ft6336::new(bus.acquire_i2c());
         touch.init().expect("touch init");
+        touch.interrupt_by_state().expect("interrupt");
         (irq, touch)
     };
 
@@ -260,7 +299,9 @@ fn main() {
 
         let irq = PinDriver::input(peripherals.pins.gpio12).expect("irq pin");
 
-        let interface = pn532::i2c::I2CInterface { i2c: bus2 };
+        let interface = pn532::i2c::I2CInterface {
+            i2c: bus.acquire_i2c(),
+        };
 
         let nfc = Pn532::<_, _, 64>::new(interface, SysTimer::default());
 
@@ -307,7 +348,20 @@ fn main() {
                 sys::esp_vfs_eventfd_register(&sys::esp_vfs_eventfd_config_t { max_fds: 16 })
             })
             .unwrap();
-            block_on(amain(displays, leds, wifi, amoled)).expect("amain ok")
+
+            tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .unwrap()
+                .block_on(amain(
+                    displays,
+                    leds,
+                    wifi,
+                    amoled,
+                    amoled_touch,
+                    amoled_touch_irq,
+                ))
+                .expect("amain ok")
         })
         .unwrap()
         .join()
