@@ -1,4 +1,5 @@
-use adv_shift_registers::AdvancedShiftRegister;
+use std::sync::Mutex;
+
 use beacons::{
     amoled::{self, Rm690B0},
     anyesp,
@@ -13,6 +14,7 @@ use esp_idf_svc::{
     hal::{
         delay::Delay,
         gpio::{AnyInputPin, IOPin, OutputPin, PinDriver},
+        i2c::{config::Config as I2cConfig, I2cDriver},
         prelude::Peripherals,
         spi::{
             config::{Config, DriverConfig, Duplex, MODE_3},
@@ -27,9 +29,11 @@ use esp_idf_svc::{
     timer::EspTaskTimerService,
     wifi::{AsyncWifi, EspWifi},
 };
+use ft6336::Ft6336;
 use log::info;
 use pn532::Pn532;
 use shiftreg_spi::SipoShiftReg;
+use static_cell::StaticCell;
 use ws2812_spi::Ws2812;
 
 async fn amain(
@@ -217,6 +221,33 @@ fn main() {
         Rm690B0::new(qspi, peripherals.pins.gpio39.downgrade_output()).expect("valid amoled")
     };
 
+    let i2c = I2cDriver::new(
+        peripherals.i2c0,
+        peripherals.pins.gpio3,
+        peripherals.pins.gpio4,
+        &I2cConfig::default(),
+    )
+    .expect("i2c");
+
+    static I2C_BUS: StaticCell<Mutex<I2cDriver<'static>>> = StaticCell::new();
+    let res = I2C_BUS.init(std::sync::Mutex::new(i2c));
+
+    let bus1 = embedded_hal_bus::i2c::MutexDevice::new(&res);
+    let bus2 = embedded_hal_bus::i2c::MutexDevice::new(&res);
+
+    let (amoled_touch_irq, amoled_touch) = {
+        let mut reset = PinDriver::output(peripherals.pins.gpio5).expect("reset");
+        reset.set_low().expect("reset low");
+        std::thread::sleep(std::time::Duration::from_millis(5));
+        reset.set_high().expect("reset high");
+
+        let irq = PinDriver::input(peripherals.pins.gpio9).expect("irq");
+
+        let mut touch = Ft6336::new(bus1);
+        touch.init().expect("touch init");
+        (irq, touch)
+    };
+
     let (nfc_irq, nfc) = {
         let spi = SpiDeviceDriver::new(
             driver,
@@ -229,7 +260,7 @@ fn main() {
 
         let irq = PinDriver::input(peripherals.pins.gpio12).expect("irq pin");
 
-        let interface = pn532::spi::SPIInterface { spi };
+        let interface = pn532::i2c::I2CInterface { i2c: bus2 };
 
         let nfc = Pn532::<_, _, 64>::new(interface, SysTimer::default());
 

@@ -170,8 +170,10 @@ dependencies = [
  "embedded-graphics",
  "embedded-graphics-core",
  "embedded-hal 1.0.0",
+ "embedded-hal-bus",
  "embuild 0.32.0",
  "esp-idf-svc",
+ "ft6336",
  "http",
  "lcd1602-driver",
  "lightning-time",
@@ -183,6 +185,7 @@ dependencies = [
  "seven_segment",
  "shiftreg-spi",
  "smart-leds",
+ "static_cell",
  "url",
  "ws2812-spi",
 ]
@@ -744,6 +747,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "embedded-hal-bus"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d3980bf28e8577db59fe2bdb3df868a419469d2cecb363644eea2b6f7797669"
+dependencies = [
+ "critical-section",
+ "embedded-hal 1.0.0",
+ "portable-atomic",
+]
+
+[[package]]
 name = "embedded-hal-nb"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1024,6 +1038,15 @@ dependencies = [
  "libc",
  "nix",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "ft6336"
+version = "0.1.0"
+source = "git+https://github.com/hyx0329/ft6336-rs.git?rev=858caa63#858caa6376cab926761ff926d7c006908189969a"
+dependencies = [
+ "embedded-hal 1.0.0",
+ "num_enum",
 ]
 
 [[package]]
@@ -1687,6 +1710,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "portable-atomic"
+version = "1.11.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f84267b20a16ea918e43c6a88433c2d54fa145c92a811b5b047ccbe153674483"
+
+[[package]]
 name = "potential_utf"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1994,6 +2023,15 @@ name = "stable_deref_trait"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a8f112729512f8e442d81f95a8a7ddf2b7c6b8a1a6f509a95864142b30cab2d3"
+
+[[package]]
+name = "static_cell"
+version = "2.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0530892bb4fa575ee0da4b86f86c667132a94b74bb72160f58ee5a4afec74c23"
+dependencies = [
+ "portable-atomic",
+]
 
 [[package]]
 name = "strsim"

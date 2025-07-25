@@ -1,7 +1,5 @@
 #![feature(super_let)]
 pub mod net;
-use adv_shift_registers::wrappers::ShifterPin;
-use adv_shift_registers::AdvancedShiftRegister;
 use anyhow::anyhow;
 use embassy_time::Timer;
 use embedded_hal::digital::OutputPin as EOP;
