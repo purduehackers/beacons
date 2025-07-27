@@ -96,8 +96,9 @@ async fn amain(
 
     let mut resp = nfc.process_async(&Request::GET_FIRMWARE_VERSION, 4).await;
     while resp.is_err() {
+        info!("Trying to init NFC...");
         resp = nfc.process_async(&Request::GET_FIRMWARE_VERSION, 4).await;
-        Timer::after_millis(10).await;
+        Timer::after_millis(100).await;
     }
     info!("NFC firmware version {:?}", resp.unwrap());
 
