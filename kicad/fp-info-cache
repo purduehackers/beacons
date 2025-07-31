@@ -1,4 +1,4 @@
-26042693239984217
+26047954652725022
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -104047,6 +104047,27 @@ MAX17048G+T10
 0
 9
 9
+footprints
+NFC
+
+
+0
+2
+2
+footprints
+QFN50P350X350X80-21N-D
+W-QFN3535-20 (Type A1)
+Integrated Circuit
+0
+21
+21
+footprints
+QFN50P600X600X100-41N-D
+SOT618-1_2022
+Integrated Circuit
+0
+41
+41
 footprints
 SC10-11EWA_KNB
 

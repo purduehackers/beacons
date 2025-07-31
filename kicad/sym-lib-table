@@ -3,4 +3,5 @@
   (lib (name "SevenSegment")(type "KiCad")(uri "${KIPRJMOD}/sevensegment.kicad_sym")(options "")(descr ""))
   (lib (name "battmon")(type "KiCad")(uri "${KIPRJMOD}/battmon.kicad_sym")(options "")(descr ""))
   (lib (name "AP7179DSKZ20-13")(type "KiCad")(uri "${KIPRJMOD}/AP7179DSKZ20-13.kicad_sym")(options "")(descr ""))
+  (lib (name "PN7160A1HN_C100E")(type "KiCad")(uri "${KIPRJMOD}/PN7160A1HN_C100E.kicad_sym")(options "")(descr ""))
 )
