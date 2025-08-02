@@ -1,4 +1,4 @@
-26047954652727022
+26051463000809107
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -104048,6 +104048,13 @@ MAX17048G+T10
 9
 9
 footprints
+DisplayConnector
+
+
+0
+18
+18
+footprints
 NFC
 
 
@@ -104075,3 +104082,10 @@ SC10-11EWA
 0
 11
 11
+footprints
+SMT_4.2X3.2_
+SMT(4.2x3.2)
+Switch
+0
+4
+4

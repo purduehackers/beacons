@@ -427,8 +427,8 @@
       "extra_units": "error",
       "footprint_filter": "ignore",
       "footprint_link_issues": "warning",
-      "four_way_junction": "ignore",
-      "global_label_dangling": "warning",
+      "four_way_junction": "warning",
+      "global_label_dangling": "error",
       "hier_label_mismatch": "error",
       "label_dangling": "error",
       "label_multiple_wires": "warning",
@@ -443,15 +443,15 @@
       "no_connect_connected": "warning",
       "no_connect_dangling": "warning",
       "pin_not_connected": "error",
-      "pin_not_driven": "error",
-      "pin_to_pin": "warning",
-      "power_pin_not_driven": "error",
-      "same_local_global_label": "warning",
+      "pin_not_driven": "warning",
+      "pin_to_pin": "error",
+      "power_pin_not_driven": "warning",
+      "same_local_global_label": "error",
       "similar_label_and_power": "warning",
       "similar_labels": "warning",
       "similar_power": "warning",
       "simulation_model_issue": "ignore",
-      "single_global_label": "ignore",
+      "single_global_label": "error",
       "unannotated": "error",
       "unconnected_wire_endpoint": "warning",
       "unit_value_mismatch": "error",
@@ -490,9 +490,16 @@
       {
         "name": "High Current",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 0,
+        "priority": 1,
         "schematic_color": "rgba(0, 0, 0, 0.000)",
         "track_width": 3.0
+      },
+      {
+        "name": "Med Current",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 0,
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.5
       }
     ],
     "meta": {
@@ -508,6 +515,18 @@
       {
         "netclass": "High Current",
         "pattern": "/REG_POS"
+      },
+      {
+        "netclass": "Med Current",
+        "pattern": "+3V3"
+      },
+      {
+        "netclass": "Med Current",
+        "pattern": "/USB_VBUS"
+      },
+      {
+        "netclass": "Med Current",
+        "pattern": "Net-(D1-A)"
       }
     ]
   },

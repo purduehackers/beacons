@@ -2794,6 +2794,16 @@
 		(uuid "3c7f56f1-c51b-4973-8a6a-6edef4470834")
 	)
 	(label "NFC_GND"
+		(at 107.95 124.46 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "4aa1f4e4-f022-4f27-8984-dbd0898af320")
+	)
+	(label "NFC_GND"
 		(at 69.85 78.74 180)
 		(effects
 			(font
