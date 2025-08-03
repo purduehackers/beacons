@@ -5474,7 +5474,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "fe74d29a-5162-4a54-aacd-8039a1c3dd4a")
-		(property "Reference" "R16"
+		(property "Reference" "R11"
 			(at 232.41 63.5 90)
 			(effects
 				(font
@@ -5526,7 +5526,7 @@
 		(instances
 			(project "beacons"
 				(path "/5f965b21-e640-476e-a1f5-99fd6aaca14e/d94a807e-452b-4b4d-a56b-0922c476e41f"
-					(reference "R16")
+					(reference "R11")
 					(unit 1)
 				)
 			)
