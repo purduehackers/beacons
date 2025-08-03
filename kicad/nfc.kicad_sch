@@ -8,7 +8,7 @@
 		(title "NFC Components")
 	)
 	(lib_symbols
-		(symbol "Connector_Generic:Conn_01x06"
+		(symbol "Connector_Generic:Conn_01x07"
 			(pin_names
 				(offset 1.016)
 				(hide yes)
@@ -17,14 +17,14 @@
 			(in_bom yes)
 			(on_board yes)
 			(property "Reference" "J"
-				(at 0 7.62 0)
+				(at 0 10.16 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
 				)
 			)
-			(property "Value" "Conn_01x06"
+			(property "Value" "Conn_01x07"
 				(at 0 -10.16 0)
 				(effects
 					(font
@@ -50,7 +50,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "Generic connector, single row, 01x06, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(property "Description" "Generic connector, single row, 01x07, script generated (kicad-library-utils/schlib/autogen/connector/)"
 				(at 0 0 0)
 				(effects
 					(font
@@ -77,9 +77,9 @@
 					(hide yes)
 				)
 			)
-			(symbol "Conn_01x06_1_1"
+			(symbol "Conn_01x07_1_1"
 				(rectangle
-					(start -1.27 6.35)
+					(start -1.27 8.89)
 					(end 1.27 -8.89)
 					(stroke
 						(width 0.254)
@@ -87,6 +87,17 @@
 					)
 					(fill
 						(type background)
+					)
+				)
+				(rectangle
+					(start -1.27 7.747)
+					(end 0 7.493)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
 					)
 				)
 				(rectangle
@@ -156,7 +167,7 @@
 					)
 				)
 				(pin passive line
-					(at -5.08 5.08 0)
+					(at -5.08 7.62 0)
 					(length 3.81)
 					(name "Pin_1"
 						(effects
@@ -174,7 +185,7 @@
 					)
 				)
 				(pin passive line
-					(at -5.08 2.54 0)
+					(at -5.08 5.08 0)
 					(length 3.81)
 					(name "Pin_2"
 						(effects
@@ -192,7 +203,7 @@
 					)
 				)
 				(pin passive line
-					(at -5.08 0 0)
+					(at -5.08 2.54 0)
 					(length 3.81)
 					(name "Pin_3"
 						(effects
@@ -210,7 +221,7 @@
 					)
 				)
 				(pin passive line
-					(at -5.08 -2.54 0)
+					(at -5.08 0 0)
 					(length 3.81)
 					(name "Pin_4"
 						(effects
@@ -228,7 +239,7 @@
 					)
 				)
 				(pin passive line
-					(at -5.08 -5.08 0)
+					(at -5.08 -2.54 0)
 					(length 3.81)
 					(name "Pin_5"
 						(effects
@@ -246,7 +257,7 @@
 					)
 				)
 				(pin passive line
-					(at -5.08 -7.62 0)
+					(at -5.08 -5.08 0)
 					(length 3.81)
 					(name "Pin_6"
 						(effects
@@ -256,6 +267,24 @@
 						)
 					)
 					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 -7.62 0)
+					(length 3.81)
+					(name "Pin_7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "7"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2713,6 +2742,16 @@
 		)
 		(uuid "0cb05501-2ad7-48e4-aa10-c718a7581100")
 	)
+	(label "NFC_EN"
+		(at 43.18 39.37 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "0f0f092a-9d34-4801-9bb9-4b3842fa1662")
+	)
 	(label "NFC_GND"
 		(at 90.17 138.43 270)
 		(effects
@@ -2743,7 +2782,7 @@
 		)
 		(uuid "1f34f686-7035-44d1-937d-53d77ac10cf0")
 	)
-	(label "NFC_3V3"
+	(label "NFC_EN"
 		(at 69.85 101.6 180)
 		(effects
 			(font
@@ -2872,6 +2911,16 @@
 			(justify left bottom)
 		)
 		(uuid "716edc08-987d-438f-9aac-5baf5dfd994d")
+	)
+	(label "NFC_3V3"
+		(at 43.18 41.91 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "74a00332-8324-4364-b348-fea01a309f17")
 	)
 	(label "I2C_SCL"
 		(at 43.18 31.75 180)
@@ -3023,16 +3072,6 @@
 		)
 		(uuid "cf7a8e06-9f9d-4be6-aba2-12478ab931f7")
 	)
-	(label "NFC_3V3"
-		(at 43.18 39.37 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "d259f6ce-0505-4621-b010-8b790c141349")
-	)
 	(label "VDD_COM"
 		(at 127 58.42 0)
 		(effects
@@ -3105,7 +3144,7 @@
 	)
 	(hierarchical_label "NFC_FWUD_C"
 		(shape input)
-		(at 43.18 50.8 180)
+		(at 43.18 55.88 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3114,9 +3153,20 @@
 		)
 		(uuid "3dbe643e-d300-44c9-8953-f61fc3cc821d")
 	)
+	(hierarchical_label "NFC_3V3_C"
+		(shape passive)
+		(at 43.18 63.5 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "63bd64ce-99d5-4f7d-83c3-8efa921aedd2")
+	)
 	(hierarchical_label "I2C_SCL_C"
 		(shape input)
-		(at 43.18 48.26 180)
+		(at 43.18 53.34 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3127,7 +3177,7 @@
 	)
 	(hierarchical_label "NFC_IRQ_C"
 		(shape output)
-		(at 43.18 53.34 180)
+		(at 43.18 58.42 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3136,9 +3186,20 @@
 		)
 		(uuid "819a7c66-357e-4497-8560-c422379eb2be")
 	)
+	(hierarchical_label "NFC_EN_C"
+		(shape input)
+		(at 43.18 60.96 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "82f8afa8-b0a2-44a5-986f-16102d46eeb1")
+	)
 	(hierarchical_label "I2C_SDA_C"
 		(shape bidirectional)
-		(at 43.18 45.72 180)
+		(at 43.18 50.8 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3147,20 +3208,9 @@
 		)
 		(uuid "b5ff3240-f089-490d-bbfa-0928044f3710")
 	)
-	(hierarchical_label "NFC_3V3_C"
-		(shape passive)
-		(at 43.18 55.88 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "bf84a17f-2904-4a47-90b1-9e7767aca96d")
-	)
 	(hierarchical_label "NFC_GND_C"
 		(shape passive)
-		(at 43.18 43.18 180)
+		(at 43.18 48.26 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4004,6 +4054,91 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector_Generic:Conn_01x07")
+		(at 48.26 34.29 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "9225bc3b-08a0-414e-b407-f7523e302df2")
+		(property "Reference" "J5"
+			(at 50.8 33.0199 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "Conn_01x07"
+			(at 50.8 35.5599 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Connector_JST:JST_PH_B7B-PH-K_1x07_P2.00mm_Vertical"
+			(at 48.26 34.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 48.26 34.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x07, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 48.26 34.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "5"
+			(uuid "eb8aa039-d570-4b6a-b28c-38cc22f433ec")
+		)
+		(pin "6"
+			(uuid "50df279d-8192-44f7-997c-2feba1d05a22")
+		)
+		(pin "7"
+			(uuid "ea86114b-485d-4ff2-9e03-f93c58f4acb7")
+		)
+		(pin "1"
+			(uuid "9a1f3d1c-9b14-4c2d-aee9-bfb81922fb0b")
+		)
+		(pin "2"
+			(uuid "6117c5f6-1d65-443f-8333-8482d4491f09")
+		)
+		(pin "3"
+			(uuid "ded2981f-64cc-4f73-b009-91a526f3f03e")
+		)
+		(pin "4"
+			(uuid "e6e8061b-5778-498b-96b9-0587e637309d")
+		)
+		(instances
+			(project ""
+				(path "/5f965b21-e640-476e-a1f5-99fd6aaca14e/d94a807e-452b-4b4d-a56b-0922c476e41f"
+					(reference "J5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 189.23 66.04 90)
 		(unit 1)
@@ -4066,88 +4201,6 @@
 			(project "beacons"
 				(path "/5f965b21-e640-476e-a1f5-99fd6aaca14e/d94a807e-452b-4b4d-a56b-0922c476e41f"
 					(reference "C29")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_01x06")
-		(at 48.26 48.26 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "9d012e23-27b5-47f5-8dde-c021ff99230f")
-		(property "Reference" "J6"
-			(at 50.8 48.2599 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "Conn_01x06"
-			(at 50.8 50.7999 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_PH_B6B-PH-K_1x06_P2.00mm_Vertical"
-			(at 48.26 48.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 48.26 48.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x06, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 48.26 48.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "6"
-			(uuid "22644ddc-8fd4-4c0c-90f9-eb01e716caa5")
-		)
-		(pin "5"
-			(uuid "80842d2a-a6d4-475d-a1d6-f290a5e5798c")
-		)
-		(pin "3"
-			(uuid "55f3c34b-a0a0-4f79-8e4a-1e76e494bacb")
-		)
-		(pin "4"
-			(uuid "01ec52c5-10d5-4ed3-8142-d971a2e563b0")
-		)
-		(pin "2"
-			(uuid "9109895d-34dc-4dcf-b1cf-4bb7d28a604a")
-		)
-		(pin "1"
-			(uuid "addb201a-34de-4639-9a9d-d00146458d66")
-		)
-		(instances
-			(project "beacons"
-				(path "/5f965b21-e640-476e-a1f5-99fd6aaca14e/d94a807e-452b-4b4d-a56b-0922c476e41f"
-					(reference "J6")
 					(unit 1)
 				)
 			)
@@ -5056,6 +5109,91 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector_Generic:Conn_01x07")
+		(at 48.26 55.88 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "ebcb1252-419a-4862-b3b8-5625c6ffdaa6")
+		(property "Reference" "J6"
+			(at 50.8 54.6099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "Conn_01x07"
+			(at 50.8 57.1499 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Connector_JST:JST_PH_B7B-PH-K_1x07_P2.00mm_Vertical"
+			(at 48.26 55.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 48.26 55.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x07, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 48.26 55.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "5"
+			(uuid "3cb5e6d1-b571-4eff-b4ac-4d9e7e4a5580")
+		)
+		(pin "6"
+			(uuid "a5dcbcf7-4ff1-4fce-9c90-009172e89b86")
+		)
+		(pin "7"
+			(uuid "b3f38bfa-c045-48d2-aa1b-e02822e73bbb")
+		)
+		(pin "1"
+			(uuid "9259e475-dd8d-4ac9-8b07-8b86e0875bb8")
+		)
+		(pin "2"
+			(uuid "9382f0f7-e511-47d8-a31d-c5c32b36edc8")
+		)
+		(pin "3"
+			(uuid "e5b1f6ef-e66b-4dbe-a7bf-3562dc29fe92")
+		)
+		(pin "4"
+			(uuid "df84dadf-db6c-42ad-af1e-ec854b01a260")
+		)
+		(instances
+			(project "beacons"
+				(path "/5f965b21-e640-476e-a1f5-99fd6aaca14e/d94a807e-452b-4b4d-a56b-0922c476e41f"
+					(reference "J6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 204.47 77.47 0)
 		(unit 1)
@@ -5377,88 +5515,6 @@
 			(project "beacons"
 				(path "/5f965b21-e640-476e-a1f5-99fd6aaca14e/d94a807e-452b-4b4d-a56b-0922c476e41f"
 					(reference "IC3")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_01x06")
-		(at 48.26 31.75 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "f6dbed8e-2580-4303-ac33-54f766c5e216")
-		(property "Reference" "J5"
-			(at 50.8 31.7499 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "Conn_01x06"
-			(at 50.8 34.2899 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_PH_B6B-PH-K_1x06_P2.00mm_Vertical"
-			(at 48.26 31.75 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 48.26 31.75 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x06, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 48.26 31.75 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "6"
-			(uuid "40e693f5-f9b2-4b21-8dc0-1ac967ae622d")
-		)
-		(pin "5"
-			(uuid "c0d334c1-fba1-48a7-9459-be4948682aef")
-		)
-		(pin "3"
-			(uuid "7530a56b-8069-402d-a69d-a1fe9d134954")
-		)
-		(pin "4"
-			(uuid "932fb74e-f077-4fe7-8c85-66d0fd69e8d3")
-		)
-		(pin "2"
-			(uuid "eeb6572e-fe35-4533-933b-74c02fd1185d")
-		)
-		(pin "1"
-			(uuid "9a010264-7733-4172-8b3e-528adeaec7f5")
-		)
-		(instances
-			(project ""
-				(path "/5f965b21-e640-476e-a1f5-99fd6aaca14e/d94a807e-452b-4b4d-a56b-0922c476e41f"
-					(reference "J5")
 					(unit 1)
 				)
 			)

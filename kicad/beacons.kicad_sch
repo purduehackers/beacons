@@ -7152,10 +7152,6 @@
 		(uuid "e8a50c0d-94e1-471d-8026-7bda38916277")
 	)
 	(no_connect
-		(at 130.81 144.78)
-		(uuid "01c5af6f-28a7-4207-becd-d15e64d2c997")
-	)
-	(no_connect
 		(at 222.25 170.18)
 		(uuid "0e3c1812-996e-4628-beb8-dd8444f3ae95")
 	)
@@ -9017,16 +9013,6 @@
 		)
 		(uuid "464f98a8-d1e7-43ea-87ce-e8cdb41bcac3")
 	)
-	(label "SS0"
-		(at 130.81 147.32 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "4cd47591-d0f8-413a-abd5-d5a388dbf3f7")
-	)
 	(label "NFC_IRQ"
 		(at 182.88 34.29 0)
 		(effects
@@ -9087,6 +9073,16 @@
 		)
 		(uuid "6c9815c4-edc8-4746-bde2-0090e306f74d")
 	)
+	(label "SS1"
+		(at 130.81 147.32 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "6dc3d814-afb7-42f4-8216-72e393cce446")
+	)
 	(label "I2C_SCL"
 		(at 182.88 36.83 0)
 		(effects
@@ -9096,6 +9092,16 @@
 			(justify left bottom)
 		)
 		(uuid "6ef3aa09-2e65-4cdd-996c-24f4495713ff")
+	)
+	(label "SS0"
+		(at 130.81 144.78 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "751cda80-8df6-46e4-868f-d6d090aab885")
 	)
 	(label "DISP_CS"
 		(at 232.41 43.18 180)
@@ -9146,6 +9152,16 @@
 			(justify left bottom)
 		)
 		(uuid "82a85cec-863e-45b0-855e-0db33664eed1")
+	)
+	(label "NFC_EN"
+		(at 182.88 39.37 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "856455b2-6ddd-4b77-9e6d-5cb3638079e5")
 	)
 	(label "LED_PEAK"
 		(at 27.94 64.77 0)
@@ -9337,6 +9353,16 @@
 		)
 		(uuid "b24a1f43-dfa5-4066-bf26-13d4df8604fb")
 	)
+	(label "NFC_EN"
+		(at 222.25 190.5 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "b2e3ba55-d747-4e3e-8d33-f73835858cf3")
+	)
 	(label "SPI_DATA1"
 		(at 222.25 205.74 0)
 		(effects
@@ -9436,16 +9462,6 @@
 			(justify left bottom)
 		)
 		(uuid "c6a82baa-c2fa-4955-a20e-4f449117eac7")
-	)
-	(label "SS1"
-		(at 222.25 190.5 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "c6cdb325-beeb-4007-a17f-3dc462ea17f1")
 	)
 	(label "SS0"
 		(at 370.84 60.96 0)
@@ -17993,7 +18009,7 @@
 	)
 	(sheet
 		(at 167.64 22.86)
-		(size 15.24 16.51)
+		(size 15.24 20.32)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
@@ -18017,7 +18033,7 @@
 			)
 		)
 		(property "Sheetfile" "nfc.kicad_sch"
-			(at 167.64 39.9546 0)
+			(at 167.64 43.7646 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18078,6 +18094,16 @@
 		(pin "NFC_GND_C" passive
 			(at 182.88 29.21 0)
 			(uuid "b6f97ee7-769c-461c-aad1-b3045c09e0d2")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "NFC_EN_C" input
+			(at 182.88 39.37 0)
+			(uuid "e13b3fdb-4b3f-4f40-9839-444b49e96f19")
 			(effects
 				(font
 					(size 1.27 1.27)
