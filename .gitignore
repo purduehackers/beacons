@@ -1,6 +1,7 @@
-/.vscode
-/.embuild
-/target
-/.env
+.vscode/
+.embuild/
+target/
+.env
 *.lck
 beacons-backups/
+.DS_Store

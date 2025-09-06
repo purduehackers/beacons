@@ -1,0 +1,242 @@
+<!doctype html>
+<!-- Copyright Cynthia Clementine
+Mar-9-2025 -->
+<html>
+    <head>
+        <title>beacon? I hardly know 'en!</title>
+        <meta charset="utf-8">
+        <link rel='icon' href='favicon.png' type='image/png'/>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+        <style>
+            :root {
+                --dpurple: #62396E;
+                --lpurple: #C48FDC;
+                --white: #FFFFFF;
+            }
+
+            body {
+                background-color: #262426;
+                font-family: "Space Grotesk", sans-serif;
+            }
+
+            button {
+                font-size: min(5.5vw, 30vh, 250%);
+                color: #000000;
+                background-color: #FDD34A;
+                border: 4px solid var(--dpurple);
+                border-radius: 2px;
+            }
+            button:hover {
+                border: 4px solid var(--lpurple);
+            }
+
+            #main_space {
+                display: grid;
+                grid-template-columns: auto auto auto auto;
+                gap: 5px;
+                margin: auto;
+                justify-content: center;
+            }
+            @media (max-width: 1460px) {
+                #main_space {
+                    grid-template-columns: auto auto auto;
+                }
+            }
+
+            @media (max-width: 1100px) {
+                #main_space {
+                    grid-template-columns: auto auto;
+                }
+            }
+            @media (max-width: 745px) {
+                #main_space {
+                    grid-template-columns: auto;
+                }
+            }
+
+            .beacon-box, #popup_space, #search_space {
+                background-color: var(--white);
+                border: 4px solid var(--dpurple);
+                width: 20em;
+                padding: 0em 1em 0em 1em;
+                outline-width: 2em;
+                overflow: hidden;
+                transition: 0.1s;
+            }
+            .beacon-box:hover {
+                border: 4px solid var(--lpurple);
+            }
+
+            .beacon-title {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: clip;
+                width: 95%;
+                filter: brightness(90%);
+            }
+
+            #popup_heading {
+                width: 95%;
+                white-space: wrap;
+            }
+
+
+            #history_space {
+                margin: auto;
+                width: 60%;
+            }
+
+            .history-box {
+                background-color: var(--white);
+                border: 4px solid var(--dpurple);
+                width: 20em;
+                padding: 0em 1em 0em 1em;
+                outline-width: 2em;
+                overflow: hidden;
+                transition: 0.1s;
+            }
+            .history-box:hover {
+                border: 4px solid #C48FDC;
+            }
+
+            #button_space {
+                position: fixed;
+                text-align: right;
+                bottom: 5px;
+                right: 5px;
+
+                font-size: 10px;
+            }
+
+            #popup_space {
+                text-align: center;
+                padding: 0em 2em 0em 2em;
+
+                margin: auto;
+                position: fixed;
+                left: 0; top: 0; bottom: 0; right: 0;
+                height: 90%;
+                width: 50%;
+                text-align: justify;
+            }
+
+            #popup_colors {
+                text-align: center;
+                position: absolute;
+                width: 100%;
+                bottom: 5em;
+                left: 0em;
+            }
+            .color-elem {
+                border: 0.7vh double black;
+                border-radius: 0;
+                width: min(4.1vw,4vh);
+                height: min(4.1vw,4vh);
+                margin-left: 0.5vh;
+            }
+            .color-elem:hover {
+                border: 0.7vh double var(--white);
+            }
+
+            #search_space {
+                padding: 0em 2em 0em 2em;
+
+                margin: auto;
+                position: fixed;
+                left: 0; top: 0; bottom: 0; right: 0;
+                height: 80%;
+                width: 30%;
+                text-align: justify;
+            }
+            #search_heading {
+                margin-top: min(4vh, 1em);
+            }
+            #search_pulseBar {
+                position: absolute;
+                left: 25%; bottom: calc(3vh + 4em + 15%);
+                width: 50%;
+                height: min(50%, calc(95% - 3vh - 4em - 15%));
+
+                border: min(1vh, 1vw) double var(--white);
+                background-color: #000000;
+            }
+            #search_baseBar {
+                position: absolute;
+                left: 10%; 
+                bottom: calc(3vh + 4em);
+                width: 80%;
+                height: 10%;
+
+                border: min(1vh, 1vw) double var(--white);
+                background-color: #000000;
+            }
+
+
+            .text {
+                cursor: default;
+                font: 22px Noto Serif;
+                paint-order: stroke;
+                stroke: #000000;
+                dominant-baseline: middle;
+                text-align: left;
+                user-select: none;
+            }
+
+            .small {
+                font: 15px Noto Serif;
+            }
+
+            .click-brick {
+                left: 50%;
+                bottom: 3vh;
+                position: absolute;
+                transform: translate(-50%);
+            }
+        </style>
+    </head>
+    <body>
+        <!-- space to store the beacon grid -->
+        <div id="main_space">
+            <!-- <div id="beacon-box-ID" class="beacon-box">
+                <h2 id="beacon-box-ID-title" class="beacon-title">titl;e</h2>
+                <p id="beacon-box-ID-desc" class="beacon-desc">desc</p>
+            </div> -->
+        </div>
+
+        <!-- space to store the history waterfall -->
+        <div id="history_space" style="display: none">
+        </div>
+
+
+        <!-- buttons. There's actually not that many of them. -->
+        <div id="button_space">
+            <button id="button_login">Log in</button><br>
+            <button id="button_history" onclick="toggleToHistory();">View Project History</button><br>
+        </div>
+
+        <!-- space to store the beacon popup with extra info + ability to ping one -->
+        <div id="popup_space" style="display: none;">
+                <h2 id="popup_heading" class="beacon-title" style="color: #FF00FF;">((title))</h2>
+                <p id="popup_desc" class="beacon-desc">((desc))</p>
+                <div id="popup_colors" style="display: none">
+
+                </div>
+                <button id="popup_lower" class="click-brick">((ping / pair))</button>
+        </div>
+        
+        <!-- search window -->
+        <div id="search_space" style="display: none;">
+            <h2 id="search_heading" class="beacon-title">Look for:</h2>
+            <div id="search_pulseBar" style="background-color: #FF00FF;"> </div>
+            <div id="search_baseBar" style="background-color: #FF00FF;"> </div>
+            <button id="search_lower" class="click-brick">Done</button>
+        </div>
+    </body>
+
+    <!--umcommon code-->
+	<!-- <script src="/socket.io/socket.io.js"></script> -->
+	<script src="client.js"></script>
+	<script src="tests.js"></script>
+</html>
